@@ -11,7 +11,7 @@ using EdgeVertices = std::array<size_t, 2>;
 using EdgeIndexList = std::vector<size_t>;
 
 using EdgeList = std::vector<std::array<std::array<double, 2>, 2>>;
-	
+    
 using Function = std::function<double(double, double)>;
 using Limit = std::array<double, 2>;
 using Resolution = std::array<size_t, 2>;
@@ -56,14 +56,14 @@ class MarchingSquares
 
 private:
     // Maps edge to node ids
-	const std::vector<EdgeVertices> edge_to_vertices_ = {
+    const std::vector<EdgeVertices> edge_to_vertices_ = {
         {0, 1},         // EdgeVertices 0
         {1, 2},         // EdgeVertices 1
         {2, 3},         // EdgeVertices 2
         {3, 0}          // EdgeVertices 3
     };
-	
-	// Maps the case to intersected edges
+    
+    // Maps the case to intersected edges
     const std::vector<EdgeIndexList> lookup_table_ = {
         {},             // Case: 0,     0000
         {2, 3},         // Case: 1      0001
@@ -90,16 +90,16 @@ private:
     const Limit x_limits_;
     const Limit y_limits_;
     const Resolution resolution_;
-	
+    
     EdgeVertices edge_id_to_nodes(size_t id) const;
     EdgeIndexList case_to_edges(size_t id) const;
 
 public:
     MarchingSquares(Function function,
-					const Limit& x_limits,
-					const Limit& y_limits,
-					const Resolution& resolution);
-	
+                    const Limit& x_limits,
+                    const Limit& y_limits,
+                    const Resolution& resolution);
+    
     EdgeList compute(double iso_value) const;
 };
 
