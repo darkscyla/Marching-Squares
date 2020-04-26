@@ -9,10 +9,11 @@ namespace cie {
 class Edge
 {
 private:
-    const Node origin_, target_;
+    const Node* origin_;
+    const Node* target_;
 
 public:
-    Edge(Node origin, Node target);
+    Edge(const Node* origin, const Node* target);
 
     std::array<double, 3> GetIsoCoordinates(const double iso_value) const;
 };

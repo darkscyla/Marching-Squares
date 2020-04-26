@@ -85,18 +85,42 @@ EdgeList MarchingSquares::compute(double iso_value) const
             const auto edges = case_to_edges(key);
             
             // Compute and add the edge after interpolation
-            for(size_t k = 0; k < edges.size() / 2; ++k)
+            if (edges.size() == 2)
             {
                 // Get the coordinates of the first edge
-                auto nodes_id = edge_id_to_nodes(edges[2 * k]);
-                const auto origin = Edge(nodes[nodes_id[0]], nodes[nodes_id[1]]).GetIsoCoordinates(iso_value);
+                auto nodes_id = edge_id_to_nodes(edges[0]);
+                const auto origin = Edge(&nodes[nodes_id[0]], &nodes[nodes_id[1]]).GetIsoCoordinates(iso_value);
 
                 // Get the coordinates of the second edge
-                nodes_id = edge_id_to_nodes(edges[2 * k + 1]);
-                const auto target = Edge(nodes[nodes_id[0]], nodes[nodes_id[1]]).GetIsoCoordinates(iso_value);
+                nodes_id = edge_id_to_nodes(edges[1]);
+                const auto target = Edge(&nodes[nodes_id[0]], &nodes[nodes_id[1]]).GetIsoCoordinates(iso_value);
 
                 edge_list.push_back({ {{origin[0], origin[1]}, 
                                        {target[0], target[1]}} });
+            }
+            else if(edges.size() == 4)
+            {
+                auto nodes_id = edge_id_to_nodes(edges[0]);
+                auto point1 = Edge(&nodes[nodes_id[0]], &nodes[nodes_id[1]]).GetIsoCoordinates(iso_value);
+
+                nodes_id = edge_id_to_nodes(edges[0]);
+                const auto point2 = Edge(&nodes[nodes_id[0]], &nodes[nodes_id[1]]).GetIsoCoordinates(iso_value);
+
+                nodes_id = edge_id_to_nodes(edges[0]);
+                auto point3 = Edge(&nodes[nodes_id[0]], &nodes[nodes_id[1]]).GetIsoCoordinates(iso_value);
+
+                nodes_id = edge_id_to_nodes(edges[0]);
+                const auto point4 = Edge(&nodes[nodes_id[0]], &nodes[nodes_id[1]]).GetIsoCoordinates(iso_value);
+
+                // Sort based on the x-component of the array
+                if (point1[0] > point3[0])
+                    std::swap(point1, point3);
+
+                edge_list.push_back({ {{point1[0], point1[1]},
+                                       {point4[0], point4[1]}} });
+
+                edge_list.push_back({ {{point2[0], point2[1]},
+                                       {point3[0], point3[1]}} });
             }
         }
     }
