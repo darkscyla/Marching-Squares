@@ -25,7 +25,7 @@ MarchingSquares::MarchingSquares(Function function,
 
 EdgeVertices MarchingSquares::edge_id_to_nodes(const size_t id) const
 {
-    if (id >= total_edges)
+    if (id >= total_edges_)
         return {};
 
     return edge_to_vertices_[id];
@@ -52,24 +52,39 @@ EdgeList MarchingSquares::compute(double iso_value) const
 
     const auto dx = (x_upper - x_lower) / resolution_[0];
     const auto dy = (y_upper - y_lower) / resolution_[1];
-    
-    // Go over all the cells
-    for(size_t i = 0; i <= resolution_[0]; ++i)
+
+    auto func_values = std::vector<std::vector<double>>(resolution_[0] + 1,
+                                     std::vector<double>(resolution_[1] + 1));
+
+    // Fill in the function values
+    for (size_t i = 0; i <= resolution_[0]; ++i)
     {
         const auto x = x_lower + i * dx;
 
-        for(size_t j = 0; j <= resolution_[1]; ++j)
+        for (size_t j = 0; j <= resolution_[1]; ++j)
+        {
+            const auto y = y_lower + j * dy;
+            func_values[i][j] = function_(x, y);
+        }
+    }
+    
+    // Go over all the cells
+    for(size_t i = 0; i < resolution_[0]; ++i)
+    {
+        const auto x = x_lower + i * dx;
+
+        for(size_t j = 0; j < resolution_[1]; ++j)
         {
             const auto y = y_lower + j * dy;
 
             // Calculate the node coordinates
             std::array<Node, 4> nodes = { {
-                    {function_, x, y + dy},            //Node 1
-                    {function_, x + dx, y + dy},    //Node 2
-                    {function_, x + dx, y},            //Node 3
-                    {function_, x, y},                //Node 4
+                    {func_values[i][j + 1], x, y + dy},             //Node 1
+                    {func_values[i + 1][j + 1], x + dx, y + dy},    //Node 2
+                    {func_values[i + 1][j], x + dx, y},             //Node 3
+                    {func_values[i][j], x, y},                      //Node 4
                 } };
-            
+
             // Compute the function signs based on iso value
             bool func_signs[4];
             
@@ -103,13 +118,13 @@ EdgeList MarchingSquares::compute(double iso_value) const
                 auto nodes_id = edge_id_to_nodes(edges[0]);
                 auto point1 = Edge(&nodes[nodes_id[0]], &nodes[nodes_id[1]]).GetIsoCoordinates(iso_value);
 
-                nodes_id = edge_id_to_nodes(edges[0]);
+                nodes_id = edge_id_to_nodes(edges[1]);
                 const auto point2 = Edge(&nodes[nodes_id[0]], &nodes[nodes_id[1]]).GetIsoCoordinates(iso_value);
 
-                nodes_id = edge_id_to_nodes(edges[0]);
+                nodes_id = edge_id_to_nodes(edges[2]);
                 auto point3 = Edge(&nodes[nodes_id[0]], &nodes[nodes_id[1]]).GetIsoCoordinates(iso_value);
 
-                nodes_id = edge_id_to_nodes(edges[0]);
+                nodes_id = edge_id_to_nodes(edges[3]);
                 const auto point4 = Edge(&nodes[nodes_id[0]], &nodes[nodes_id[1]]).GetIsoCoordinates(iso_value);
 
                 // Sort based on the x-component of the array
@@ -127,5 +142,5 @@ EdgeList MarchingSquares::compute(double iso_value) const
 
     return edge_list;
 }
-    
+
 } // namespace cie

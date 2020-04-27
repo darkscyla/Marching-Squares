@@ -83,7 +83,7 @@ private:
         {}              // Case: 15     1111
     };
 
-    const size_t total_edges = edge_to_vertices_.size();
+    const size_t total_edges_ = edge_to_vertices_.size();
     const size_t total_cases_ = lookup_table_.size();
 
     const Function function_;
