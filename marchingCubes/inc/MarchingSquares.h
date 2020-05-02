@@ -4,8 +4,12 @@
 #include <vector>
 #include <array>
 #include <functional>
+#include <tuple>
+
 
 namespace cie {
+
+using Point2D = std::array<double, 2>;
 
 using EdgeVertices = std::array<size_t, 2>;
 using EdgeIndexList = std::vector<size_t>;
@@ -13,8 +17,11 @@ using EdgeIndexList = std::vector<size_t>;
 using EdgeList = std::vector<std::array<std::array<double, 2>, 2>>;
     
 using Function = std::function<double(double, double)>;
-using Limit = std::array<double, 2>;
+using Limits = std::array<double, 2>;
 using Resolution = std::array<size_t, 2>;
+
+using VerticesList = std::vector<Point2D>;
+using IndicesList = std::vector<EdgeVertices>;
 
 class MarchingSquares
 {
@@ -25,7 +32,7 @@ class MarchingSquares
  *
  * The numbering of the square is as follows:
  *
- *        Node: 0     Edge: 0     Node: 1
+ *        Node: 3     Edge: 2     Node: 2
  *            o-----------------------o
  *            |                       |
  *            |                       |
@@ -36,7 +43,7 @@ class MarchingSquares
  *            |                       |
  *            |                       |
  *            o-----------------------o
- *        Node: 3     Edge: 2     Node: 2
+ *        Node: 0     Edge: 0     Node: 1
  *
  * We will represent the node by 1 if it is positive
  * Otherwise, we assign it the value 0
@@ -51,6 +58,8 @@ class MarchingSquares
  * we have,
  *
  *      id: 1000
+ *
+ * This binary converted to int corresponds to the lookup key
  * 
  */
 
@@ -87,20 +96,42 @@ private:
     const size_t total_cases_ = lookup_table_.size();
 
     const Function function_;
-    const Limit x_limits_;
-    const Limit y_limits_;
+    const Limits x_limits_;
+    const Limits y_limits_;
     const Resolution resolution_;
-    
+
+    const double dx_, dy_;
+    mutable double cur_x_, cur_y_;
+    const bool x_major_;
+
+    size_t nx1_, nx2_;
+
+    // Preallocate memory for maximum possible vertices m(n+1) + n(m+1)
+    mutable size_t vertex_count_ = 0;
+    mutable VerticesList vertices_ = {};
+
+    static Resolution verify_resolution(const Resolution& resolution);
     EdgeVertices edge_id_to_nodes(size_t id) const;
     EdgeIndexList case_to_edges(size_t id) const;
 
+    void increment_minor_axis() const;
+    void reset_minor_axis() const;
+    void increment_major_axis() const;
+    void reset_major_axis() const;
+    inline void check_vertical_edge(std::vector<double>& arr, const size_t index, const double iso_value, Point2D& last_point, std::vector<size_t>& index_map) const;
+    Point2D get_previous_horizontal_point() const;
+    inline void check_horizontal_edge(const Point2D&& values, double iso_value, Point2D&& last_point, size_t& index) const;
+    void reset() const;
+
 public:
     MarchingSquares(Function function,
-                    const Limit& x_limits,
-                    const Limit& y_limits,
+                    const Limits& x_limits,
+                    const Limits& y_limits,
                     const Resolution& resolution);
     
     EdgeList compute(double iso_value) const;
+
+    std::tuple<VerticesList, IndicesList> compute2(double iso_value) const;
 };
 
 } //namespace cie

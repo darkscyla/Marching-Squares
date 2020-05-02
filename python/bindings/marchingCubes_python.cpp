@@ -30,7 +30,8 @@ PYBIND11_MODULE(pymarchingCubes, m )
 	;
 
 	py::class_<MarchingSquares, std::shared_ptr<MarchingSquares>>(m, "MarchingSquares")
-	.def(py::init<Function, const Limit&, const Limit&, const Resolution&> ())
+	.def(py::init<Function, const Limits&, const Limits&, const Resolution&> ())
 	.def("compute", &MarchingSquares::compute)
+	.def("compute_faster", &MarchingSquares::compute2, py::call_guard<py::gil_scoped_release>())
 	;
 }
