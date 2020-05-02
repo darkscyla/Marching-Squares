@@ -131,7 +131,7 @@ public:
     
     EdgeList compute(double iso_value) const;
 
-    std::tuple<VerticesList, IndicesList> compute2(double iso_value) const;
+    std::tuple<VerticesList, IndicesList> compute_faster(double iso_value) const;
 };
 
 } //namespace cie

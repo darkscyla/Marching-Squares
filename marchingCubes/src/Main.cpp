@@ -32,11 +32,11 @@ int main()
     Timer clock;
     const auto result = mc.compute(0.5);
     clock.tic("Normal compute");
-    const auto result2 = mc.compute2(0.5);
+    const auto result_faster = mc.compute_faster(0.5);
     clock.tic("Improved compute");
 
     std::cout << "Result size: " << result.size() << std::endl;
-    std::cout << "Second result size: " << std::get<1>(result2).size() << std::endl;
+    std::cout << "Second result size: " << std::get<1>(result_faster).size() << std::endl;
 
     return 0;
 }

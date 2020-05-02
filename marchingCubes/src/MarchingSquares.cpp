@@ -1,10 +1,10 @@
+// Internal Includes
 #include "MarchingSquares.h"
 #include "Node.h"
 #include "Edge.h"
 
-#include <cassert>
+// Standard includes
 #include <iostream>
-
 
 namespace cie {
 
@@ -67,10 +67,19 @@ MarchingSquares::MarchingSquares(Function function,
 
 Resolution MarchingSquares::verify_resolution(const Resolution& resolution)
 {
-    assert(("The number of cells in x directions must be greater than 0", resolution[0] > 0));
-    assert(("The number of cells in y directions must be greater than 0", resolution[1] > 0));
+    auto new_resolution = resolution;
+    if (resolution[0] < 1 )
+    {
+        std::cerr << "MarchingSquares::Constructor: The resolution in x direction must be greater than 0. Automatically setting it to 1\n";
+        new_resolution[0] = 1;
+    }
+    if (resolution[1] < 1)
+    {
+        std::cerr << "MarchingSquares::Constructor: The resolution in y direction must be greater than 0. Automatically setting it to 1\n";
+        new_resolution[1] = 1;
+    }
 
-    return resolution;
+    return new_resolution;
 }
 
 EdgeVertices MarchingSquares::edge_id_to_nodes(const size_t id) const
@@ -133,21 +142,6 @@ EdgeList MarchingSquares::compute(double iso_value) const
 
     const auto dx = (x_upper - x_lower) / resolution_[0];
     const auto dy = (y_upper - y_lower) / resolution_[1];
-
-    auto func_values = std::vector<std::vector<double>>(resolution_[0] + 1,
-                                     std::vector<double>(resolution_[1] + 1));
-
-    // Fill in the function values
-    for (size_t i = 0; i <= resolution_[0]; ++i)
-    {
-        const auto x = x_lower + i * dx;
-
-        for (size_t j = 0; j <= resolution_[1]; ++j)
-        {
-            const auto y = y_lower + j * dy;
-            func_values[i][j] = function_(x, y);
-        }
-    }
     
     // Go over all the cells
     for(size_t i = 0; i < resolution_[0]; ++i)
@@ -160,10 +154,10 @@ EdgeList MarchingSquares::compute(double iso_value) const
 
             // Calculate the node coordinates
             std::array<Node, 4> nodes = { {
-                    {func_values[i][j + 1], x, y + dy},             //Node 1
-                    {func_values[i + 1][j + 1], x + dx, y + dy},    //Node 2
-                    {func_values[i + 1][j], x + dx, y},             //Node 3
-                    {func_values[i][j], x, y},                      //Node 4
+                    {function_(x_lower +  i      * dx, y_lower + (j + 1) * dy), x,      y + dy},        //Node 1
+                    {function_(x_lower + (i + 1) * dx, y_lower + (j + 1) * dy), x + dx, y + dy},        //Node 2
+                    {function_(x_lower + (i + 1) * dx, y_lower +  j      * dy), x + dx, y     },        //Node 3
+                    {function_(x_lower +  i      * dx, y_lower +  j      * dy), x,      y     },        //Node 4
                 } };
 
             // Compute the function signs based on iso value
@@ -274,13 +268,13 @@ Point2D MarchingSquares::get_previous_horizontal_point() const
 
 // In order to store minimum number of calculations, we play smart
 // We will return a vertex array object and an element index buffer
-std::tuple<VerticesList, IndicesList> MarchingSquares::compute2(const double iso_value) const
+std::tuple<VerticesList, IndicesList> MarchingSquares::compute_faster(const double iso_value) const
 {
     size_t edge_counter = 0;
-    // Preallocate memory for maximum possible vertices m(n+1) + n(m+1)
-    vertices_.reserve(nx1_ * (nx2_ + 1) + nx2_ * (nx1_ + 1));
+    // If the size was already known, we can use std::reserve
+    // It turns out that allocating more memory and then reducing
+    // it is more expensive than letting the vector do its thing
     std::vector<std::array<size_t, 2>> indices;
-    indices.reserve(2 * nx1_ * nx2_);
 
     // Pre-compute the function values at first column of the minor axis
     std::vector<double> last_col_func(nx2_ + 1);
@@ -401,16 +395,9 @@ std::tuple<VerticesList, IndicesList> MarchingSquares::compute2(const double iso
     }
     reset();
 
- /*   std::cout << "Vertex count var: " << vertex_count_ << std::endl;
-    std::cout << "Vertex count before: " << vertices_.size() << std::endl;
-    vertices_.resize(vertex_count_);
-    vertices_.shrink_to_fit();
-    std::cout << "Vertex count after: " << vertices_.size() << std::endl;
-    indices.resize(edge_counter);
-    indices.shrink_to_fit();*/
-
     vertex_count_ = 0;
-    // vertices_ will implicitly be reset due to std::move
+
+    // Vertices_ will implicitly be reset due to std::move
     return { std::move(vertices_), std::move(indices) };
 }
 } // namespace cie
