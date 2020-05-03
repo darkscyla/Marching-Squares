@@ -11,7 +11,7 @@ namespace cie {
 
 using Point2D = std::array<double, 2>;
 
-using EdgeVertices = std::array<size_t, 2>;
+using EdgeVertices = std::array<uint32_t, 2>;
 using EdgeIndexList = std::vector<size_t>;
 
 using EdgeList = std::vector<std::array<std::array<double, 2>, 2>>;
@@ -107,7 +107,7 @@ private:
     size_t nx1_, nx2_;
 
     // Preallocate memory for maximum possible vertices m(n+1) + n(m+1)
-    mutable size_t vertex_count_ = 0;
+    mutable uint32_t vertex_count_ = 0;
     mutable VerticesList vertices_ = {};
 
     static Resolution verify_resolution(const Resolution& resolution);
@@ -118,9 +118,9 @@ private:
     void reset_minor_axis() const;
     void increment_major_axis() const;
     void reset_major_axis() const;
-    inline void check_vertical_edge(std::vector<double>& arr, const size_t index, const double iso_value, Point2D& last_point, std::vector<size_t>& index_map) const;
+    inline void check_vertical_edge(std::vector<double>& arr, const uint32_t index, const double iso_value, Point2D& last_point, std::vector<uint32_t>& index_map) const;
     Point2D get_previous_horizontal_point() const;
-    inline void check_horizontal_edge(const Point2D&& values, double iso_value, Point2D&& last_point, size_t& index) const;
+    inline void check_horizontal_edge(const Point2D&& values, double iso_value, Point2D&& last_point, uint32_t& index) const;
     void reset() const;
 
 public:

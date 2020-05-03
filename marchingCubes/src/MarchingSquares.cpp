@@ -218,17 +218,17 @@ EdgeList MarchingSquares::compute(double iso_value) const
     return edge_list;
 }
 
-void MarchingSquares::check_vertical_edge(std::vector<double>& arr, const size_t index, const double iso_value, Point2D& last_point, std::vector<size_t>& index_map) const
+void MarchingSquares::check_vertical_edge(std::vector<double>& arr, const uint32_t index, const double iso_value, Point2D& last_point, std::vector<uint32_t>& index_map) const
 {
-    arr[index + 1] = function_(cur_x_, cur_y_);
+    arr[static_cast<size_t>(index) + 1] = function_(cur_x_, cur_y_);
 
     // If function value signs are opposite
     if ((arr[index] - iso_value) *
-        (arr[index + 1] - iso_value) <= 0)
+        (arr[static_cast<size_t>(index) + 1] - iso_value) <= 0)
     {
         vertices_.emplace_back(LinearInterpolate(last_point,
             { cur_x_, cur_y_ },
-            { arr[index], arr[index + 1] },
+            { arr[index], arr[static_cast<size_t>(index) + 1] },
             iso_value));
 
         index_map[index] = vertex_count_;
@@ -238,7 +238,7 @@ void MarchingSquares::check_vertical_edge(std::vector<double>& arr, const size_t
     last_point = { cur_x_, cur_y_ };
 }
 
-void MarchingSquares::check_horizontal_edge(const Point2D&& values, double iso_value, Point2D&& last_point, size_t& index) const
+void MarchingSquares::check_horizontal_edge(const Point2D&& values, double iso_value, Point2D&& last_point, uint32_t& index) const
 {
     if ((values[0] - iso_value) *
         (values[1] - iso_value) <= 0)
@@ -270,23 +270,22 @@ Point2D MarchingSquares::get_previous_horizontal_point() const
 // We will return a vertex array object and an element index buffer
 std::tuple<VerticesList, IndicesList> MarchingSquares::compute_faster(const double iso_value) const
 {
-    size_t edge_counter = 0;
     // If the size was already known, we can use std::reserve
     // It turns out that allocating more memory and then reducing
     // it is more expensive than letting the vector do its thing
-    std::vector<std::array<size_t, 2>> indices;
+    IndicesList indices;
 
     // Pre-compute the function values at first column of the minor axis
     std::vector<double> last_col_func(nx2_ + 1);
     std::vector<double> cur_col_func(nx2_ + 1);
 
     // Map to store the vertices index
-    std::vector<size_t> last_index_map(nx2_);
-    std::vector<size_t> cur_index_map(nx2_);
+    std::vector<uint32_t> last_index_map(nx2_);
+    std::vector<uint32_t> cur_index_map(nx2_);
 
-    size_t top_index, bottom_index;
+    uint32_t top_index, bottom_index;
     bool pattern[4];
-    size_t assembled_point_indexes[4];
+    uint32_t assembled_point_indexes[4];
 
     // Compute first point of the zeroth column
     last_col_func[0] = function_(cur_x_, cur_y_);
@@ -294,7 +293,7 @@ std::tuple<VerticesList, IndicesList> MarchingSquares::compute_faster(const doub
     increment_minor_axis();
 
     // Calculate rest of the entries of the zeroth column
-    for (size_t j = 0; j < nx2_; ++j)
+    for (uint32_t j = 0; j < nx2_; ++j)
     {
         check_vertical_edge(last_col_func, j, iso_value, last_point, last_index_map);
         increment_minor_axis();
@@ -303,7 +302,7 @@ std::tuple<VerticesList, IndicesList> MarchingSquares::compute_faster(const doub
     increment_major_axis();
 
     // Go over all the cells, iterating primarily over minor axis (smaller boundary, less storage)
-    for (size_t i = 0; i < nx1_; ++i)
+    for (uint32_t i = 0; i < nx1_; ++i)
     {
         // Compute the first entry of the current column
         cur_col_func[0] = function_(cur_x_, cur_y_);
@@ -318,13 +317,13 @@ std::tuple<VerticesList, IndicesList> MarchingSquares::compute_faster(const doub
 
         increment_minor_axis();
 
-        for (size_t j = 0; j < nx2_; ++j)
+        for (uint32_t j = 0; j < nx2_; ++j)
         {
             check_vertical_edge(cur_col_func, j, iso_value, last_point, cur_index_map);
 
             // Now we compute the coordinates of the new vertex on the horizontal edge
             check_horizontal_edge(
-                { last_col_func[j + 1], cur_col_func[ j + 1] },
+                { last_col_func[static_cast<size_t>(j) + 1], cur_col_func[static_cast<size_t>(j) + 1] },
                 iso_value,
                 get_previous_horizontal_point(),
                 top_index);
@@ -337,20 +336,18 @@ std::tuple<VerticesList, IndicesList> MarchingSquares::compute_faster(const doub
             // Check the cells case
             pattern[0] = last_col_func[j] - iso_value > 0;
             pattern[1] = cur_col_func[j] - iso_value > 0;
-            pattern[2] = cur_col_func[j + 1] - iso_value > 0;
-            pattern[3] = last_col_func[j + 1] - iso_value > 0;
+            pattern[2] = cur_col_func[static_cast<size_t>(j) + 1] - iso_value > 0;
+            pattern[3] = last_col_func[static_cast<size_t>(j) + 1] - iso_value > 0;
 
             const auto key = ToInt(pattern, 4);
             const auto intersected_edges = case_to_edges(key);
 
             if (intersected_edges.size() == 2)
             {
-                indices.emplace_back(std::array<size_t, 2> {
+                indices.emplace_back(std::array<uint32_t, 2> {
                     assembled_point_indexes[intersected_edges[0]],
                         assembled_point_indexes[intersected_edges[1]]
                 });
-
-                edge_counter += 1;
             }
             // Ambiguous cases
             else if (intersected_edges.size() == 4)
@@ -359,29 +356,28 @@ std::tuple<VerticesList, IndicesList> MarchingSquares::compute_faster(const doub
                 if (vertices_[assembled_point_indexes[0]][0] > 
                     vertices_[assembled_point_indexes[2]][0])
                 {
-                    indices.emplace_back(std::array<size_t, 2> {
+                    indices.emplace_back(std::array<uint32_t, 2> {
                         assembled_point_indexes[intersected_edges[0]],
                             assembled_point_indexes[intersected_edges[1]]
                     });
 
-                    indices.emplace_back(std::array<size_t, 2> {
+                    indices.emplace_back(std::array<uint32_t, 2> {
                         assembled_point_indexes[intersected_edges[2]],
                             assembled_point_indexes[intersected_edges[3]]
                     });
                 }
                 else
                 {
-                    indices.emplace_back(std::array<size_t, 2> {
+                    indices.emplace_back(std::array<uint32_t, 2> {
                         assembled_point_indexes[intersected_edges[0]],
                             assembled_point_indexes[intersected_edges[3]]
                     });
 
-                    indices.emplace_back(std::array<size_t, 2> {
+                    indices.emplace_back(std::array<uint32_t, 2> {
                         assembled_point_indexes[intersected_edges[1]],
                             assembled_point_indexes[intersected_edges[2]]
                     });
                 }
-                edge_counter += 2;
             }
 
             bottom_index = top_index;
