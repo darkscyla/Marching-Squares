@@ -4,17 +4,18 @@
 
 #include <array>
 
-namespace cie {
+namespace marching_squares {
 
 class Edge
 {
-private:
-    const Node* origin_;
-    const Node* target_;
-
 public:
     Edge(const Node* origin, const Node* target);
 
-    std::array<double, 3> GetIsoCoordinates(const double iso_value) const;
+    std::array<double, 3> GetIsoCoordinates(double iso_value) const;
+
+private:
+    const Node* origin_;
+    const Node* target_;
 };
-} // namespace cie
+
+} // namespace marching_squares

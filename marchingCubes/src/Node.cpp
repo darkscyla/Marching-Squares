@@ -1,6 +1,6 @@
 #include "Node.h"
 
-namespace cie {
+namespace marching_squares {
 
 Node::Node(const double val, const double x, const double y) :
     val_(val), x_(x), y_(y)
@@ -31,4 +31,4 @@ double Node::Value() const
 {
     return val_;
 }
-} // namespace cie
+} // namespace marching_squares

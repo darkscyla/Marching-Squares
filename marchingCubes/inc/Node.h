@@ -1,25 +1,21 @@
 #pragma once
 
-#include <functional>
-
-namespace cie {
+namespace marching_squares {
 
 class Node
 {
-
-private:
-    const double val_;
-    const double x_, y_;
-    double z_ = 0;
-    
 public:
-    Node(const double val, const double x, const double y);
-    Node(const double val, const double x, const double y, const double z);
+    Node(double val, double x, double y);
+    Node(double val, double x, double y, double z);
 
     double X() const;
     double Y() const;
     double Z() const;
     double Value() const;
+private:
+    const double val_;
+    const double x_, y_;
+    double z_ = 0;
 };
 
-} // namespace cie
+} // namespace marching_squares

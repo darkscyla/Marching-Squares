@@ -1,6 +1,6 @@
 #include "Edge.h"
 
-namespace cie {
+namespace marching_squares {
 
 Edge::Edge(const Node* origin, const Node* target):
     origin_(origin), target_(target)
@@ -19,4 +19,4 @@ std::array<double, 3> Edge::GetIsoCoordinates(const double iso_value) const
     };
 }
 
-} // namespace cie
+} // namespace marching_squares

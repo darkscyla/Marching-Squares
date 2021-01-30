@@ -6,9 +6,6 @@
 
 class Timer
 {
-private:
-    std::chrono::steady_clock::time_point clock_;
-
 public:
     Timer(): clock_(std::chrono::high_resolution_clock::now()) {}
 
@@ -18,6 +15,9 @@ public:
         std::cout << message << ": Took " << std::chrono::duration_cast<std::chrono::milliseconds>(end - clock_).count() << "\n";
         clock_ = end;
     }
+
+private:
+    std::chrono::steady_clock::time_point clock_;
 };
 
 int main()
@@ -27,7 +27,7 @@ int main()
         return std::sin(x*x + y*y) - std::cos(x * y);
     };
 
-    const auto mc = cie::MarchingSquares(func, {-10, 10}, {-10, 10}, {25000, 25000});
+    const auto mc = marching_squares::MarchingSquares(func, {-10, 10}, {-10, 10}, {25000, 25000});
 
     Timer clock;
     const auto result = mc.compute(0.5);

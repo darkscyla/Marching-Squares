@@ -14,13 +14,13 @@
 
 namespace py = pybind11;
 
-using namespace cie;
+using namespace marching_squares;
 
 PYBIND11_MODULE(pymarchingCubes, m )
 {
     m.doc( ) = "Module that implements marching cubes and marching squares";
 
-	m.def("compute_faster_wrapper", [](const cie::MarchingSquares& obj, const double iso_value) ->std::tuple<py::array, py::array>
+	m.def("compute_faster_wrapper", [](const marching_squares::MarchingSquares& obj, const double iso_value) ->std::tuple<py::array, py::array>
 	{
 		auto result = obj.compute_faster(iso_value);
 

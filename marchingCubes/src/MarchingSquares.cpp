@@ -6,7 +6,7 @@
 // Standard includes
 #include <iostream>
 
-namespace cie {
+namespace marching_squares {
 
 /**
  * Converts the binary array to a single int
@@ -16,7 +16,7 @@ namespace cie {
  *
  * @return Integer value of the given binary number, or 0 if empty
  */
-size_t ToInt(const bool arr[], const size_t size)
+inline size_t ToInt(const bool arr[], const size_t size)
 {
     size_t result = 0;
 
@@ -130,7 +130,7 @@ void MarchingSquares::reset_major_axis() const
         cur_y_ = y_limits_[0];
 }
 
-EdgeList MarchingSquares::compute(double iso_value) const
+EdgeList MarchingSquares::compute(const double iso_value) const
 {
     EdgeList edge_list;
 
@@ -396,4 +396,4 @@ std::tuple<VerticesList, IndicesList> MarchingSquares::compute_faster(const doub
     // Vertices_ will implicitly be reset due to std::move
     return { std::move(vertices_), std::move(indices) };
 }
-} // namespace cie
+} // namespace marching_squares
