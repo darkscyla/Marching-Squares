@@ -8,12 +8,12 @@ import numpy as np
 
 
 def func(x,y):
-    return sin(5 * x) * cos(5 * y)/5
+    # return sin(5 * x) * cos(5 * y)/5
     # return sin(0.1 * x * x + 0.2 * y * y)
     # return (1-(x**2+y**3))*exp(-(x**2+y**2)/2)
     # return exp(sin(x) + cos(y)) -sin(exp(x+y))
-    # return sin(sin(x) + cos(y)) - cos(sin(x*y) + cos(x))
-    # return sin(x**2 + y**2) - cos(x*y)
+    # return sin(sin(10*x) + cos(10*y)) - cos(sin(100*x*y) + cos(10*x))
+    return sin(100*x**2 + 100*y**2) - cos(100*x*y)
 
 
 vertex_src = """
@@ -75,7 +75,7 @@ class Window():
         # TODO: Implement camera class to move around the scene  
         ms = MarchingSquares(func, [-1, 1], [-1,1], [250, 250])
 
-        vertices, self.indices = compute_faster_wrapper(ms, 0.05)
+        vertices, self.indices = compute_faster_wrapper(ms, 0.5)
 
         # Flatten out the array
         vertices = np.ravel(vertices)
